@@ -14,38 +14,90 @@ void  Init (int M, int b){
   memory_pool = M;
   block_size = b;
 }
+
 void  Destroy (){
   free(head_ptr);
 }
+
 int   Insert (int key,char* value_ptr, int value_len){
-  if(block_size - ptr_offset == value_len)
+  if(block_size - ptr_offset <= value_len)
   {
-      //throw
+    //throw exception?
+    printf("Size too big\n");
+    return 0;
   }
-  *(int*)(free_ptr + key_offset) = key;
-  *(int*)(free_ptr + len_offset) = value_len;
-  memcpy(free_ptr + ptr_offset, value_ptr, value_len);
-  free_ptr += block_size;
+  else {
+    //set previous nodes "next" ptr
+    *(char*)(free_ptr + block_size) = free_ptr;
+    *(int*)(free_ptr + key_offset) = key;
+    *(int*)(free_ptr + len_offset) = value_len;
+    memcpy(free_ptr + ptr_offset, value_ptr, value_len);
+    /* printf("STRING INSERT %s \n", value_ptr); */
+    free_ptr += block_size;
+  }
   //TODO:find out spec meaning
-  return key;
+  return 1;
 }
 int   Delete (int key){
-  void* delete_ptr = head_ptr;
-  int i;
+  void* ptr = head_ptr;
 
-  for(i = 0; i < memory_pool/b; ++i) {
-    if(*(int*)delete_ptr != key) {
-      delete_ptr += block_size;
+  for(int i = 0; i <= memory_pool/block_size; ++i) {
+    if(getNodeKey(ptr) != key) {
+      ptr += block_size;
     }
     else {
-      (free_ptr + key_offset) = NULL;
-      (free_ptr + len_offset) = NULL;
-      (delete_ptr + ptr_offset) = NULL;
-      break;
+      /* printf("trying to delete this %d \n", getNodeKey(ptr)); */
+      *(char*)(free_ptr - block_size) = (free_ptr + block_size);
+      *(char*)(ptr) = NULL;
+      *(int*)(ptr + key_offset) = NULL;
+      *(int*)(ptr + len_offset) = NULL;
+      *(char*)(ptr + ptr_offset) = NULL;
+      return 1;
     }
   }
-
+  return 0;
 }
 
-char*   Lookup (int key){return NULL;}
-void  PrintList (){}
+char* Lookup (int key) {
+
+  void* ptr = head_ptr;
+  for(int i = 0; i <= memory_pool/block_size; ++i) {
+    if(getNodeKey(ptr) == key && key != NULL) {
+      return (char*)ptr;
+    }
+    else {
+      ptr += block_size;
+    }
+  }
+  return NULL;
+}
+
+void PrintString( int num_of_chars, char* to_print ) {
+  for(int i = 0; i < num_of_chars; ++i) {
+    printf("%c",*(++to_print));
+  }
+}
+
+void  PrintList () {
+  void * ptr = head_ptr;
+  for(int i = 0; i <= memory_pool/block_size; ++i) {
+    if(getNodeKey(ptr) != NULL) {
+      printf("Key: %d , ValueLength: %d \n", getNodeKey(ptr), getNodeValueLength(ptr));
+    }
+      ptr += block_size;
+
+  }
+  printf("\n");
+}
+
+
+//Wrapper Functions for Offset
+char* getNodeValue(void* ptr) {
+  return (char*)(ptr + ptr_offset);
+}
+int getNodeKey(void* ptr){
+  return *(int*)(ptr + key_offset);
+}
+int getNodeValueLength(void* ptr) {
+  return *(int*)(ptr + len_offset);
+}

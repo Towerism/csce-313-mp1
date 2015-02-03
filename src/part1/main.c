@@ -38,6 +38,7 @@ int main(int argc, char ** argv)
 
 
   // this look up  should succeed and print the string "a sample message"
+  //TODO: MARTIN, this is where the seg fault is happening
   kv = Lookup (13);
   if (kv)
     printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), kv + 8);

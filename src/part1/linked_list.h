@@ -1,9 +1,13 @@
 #ifndef _linked_list_h_                   // include file only once
 #define _linked_list_h_
 
-const int key_offset = 0;
-const int len_offset = sizeof(int);
-const int ptr_offset = sizeof(int)*2;
+const int key_offset = sizeof(char*);
+const int len_offset = key_offset + sizeof(int);
+const int ptr_offset = key_offset + sizeof(int)*2;
+
+char* getNodeValue(void* ptr);
+int getNodeValueLength(void* ptr);
+int getNodeKey(void* ptr);
 
 void  Init (int M, int b); // initializes the linked list, should be called once from the main
 void  Destroy ();      // destroys the linked list and cleans resources
@@ -12,4 +16,5 @@ int   Delete (int key);    // delete the whole block containing that particular 
 char*   Lookup (int key);  // Looks up the first item with the given and returns a pointer to the value portion (the value length and the actual value)
 //(the user can read or modify after obtaining the pointer)
 void  PrintList ();   // prints the entire list by following the next pointers. Print the keys and the length of the value
+
 #endif
