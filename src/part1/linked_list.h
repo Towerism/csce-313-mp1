@@ -1,9 +1,9 @@
 #ifndef _linked_list_h_                   // include file only once
 #define _linked_list_h_
 
-const int key_offset = sizeof(char*);
-const int len_offset = key_offset + sizeof(int);
-const int ptr_offset = key_offset + sizeof(int)*2;
+int key_offset = sizeof(char*);
+int len_offset = sizeof(char*) + sizeof(int);
+int ptr_offset = sizeof(char*) + sizeof(int)*2;
 
 char* getNodeValue(void* ptr);
 int getNodeValueLength(void* ptr);

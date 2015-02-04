@@ -63,7 +63,7 @@ char* Lookup (int key) {
   void* ptr = head_ptr;
   for(int i = 0; i <= memory_pool/block_size; ++i) {
     if(getNodeKey(ptr) == key && key != NULL) {
-      return (char*)ptr;
+      return (char*)ptr + key_offset;
     }
     else {
       ptr += block_size;
