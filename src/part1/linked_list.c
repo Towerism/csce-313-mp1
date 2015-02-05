@@ -12,7 +12,7 @@ static int block_size;
 void  Init (int M, int b){
   //calloc gets rid of free() problem, but introduces other one.
   //The real problem is insert 13 where they use a null byte
-  head_ptr = malloc(M);
+  head_ptr = calloc(M, b);
 
   free_ptr = head_ptr;
   memory_pool = M;
@@ -33,7 +33,8 @@ int   Insert (int key,char* value_ptr, int value_len){
   else {
     //set previous nodes "next" ptr
     if(free_ptr != head_ptr) {
-      *(char*)(free_ptr - block_size) = free_ptr;
+      *(char**)(free_ptr - block_size) = free_ptr;
+
     }
     *(int*)(free_ptr + key_offset) = key;
     *(int*)(free_ptr + len_offset) = value_len;
@@ -53,7 +54,7 @@ int   Delete (int key){
     }
     else {
       if(ptr!=head_ptr) {
-        *(char*)(ptr - block_size) = (ptr + block_size);
+        *(char**)(ptr - block_size) = (ptr + block_size);
       }
       *(int*)(ptr + key_offset) = NULL;
       *(int*)(ptr + len_offset) = NULL;
@@ -90,7 +91,6 @@ void PrintString( int num_of_chars, char* to_print ) {
 void  PrintList () {
   void * ptr = head_ptr;
   int i;
-//getNodeKey(ptr) == key && key != NULL
   for(i = 0; i <= memory_pool/block_size; ++i) {
     if(getNodeKey(ptr) != NULL && getNodeValueLength(ptr) != NULL) {
       printf("Key: %d , ValueLength: %d \n", getNodeKey(ptr), getNodeValueLength(ptr));

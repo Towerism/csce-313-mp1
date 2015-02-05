@@ -41,10 +41,11 @@ int main(int argc, char ** argv)
   //TODO: MARTIN, this is where the seg fault is happening
   kv = Lookup (13);
   if (kv)
-    printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), kv + 8);
+    printf ("Key = %d,", *(int *) kv);
+   // Value Len = %d, Value = %s \n", *(int *) kv, *(int *) (kv+4), kv + 8);
 
 
-  // end test operations
-//  Destroy ();
+// end test operations
+  Destroy ();
 
 }
