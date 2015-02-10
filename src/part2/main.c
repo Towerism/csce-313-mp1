@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
   int testnums [] = {0, 1<<29 , (1<<29) + 5 , 50, (1<<30) + 5, (1<<30) - 500};
   int i = 0;
   // some sample insertions
-  for (i=0; i< 10; i ++)
+  for (i=0; i< 6; i ++)
   {
     /* printf("%d \n", testnums[i]); */
     Insert (testnums [i], buf, 50);   // insert 50 bytes from the buffer as value for each of the insertions

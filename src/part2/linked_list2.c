@@ -16,16 +16,23 @@ static int tier_size;
 void  Init (int M, int b, int t) {
   int i;
   int amount = t * M;
-  head_ptr = calloc(M/b * t, b);
+  head_ptr = malloc(amount);
   tail_ptr = head_ptr + amount;
   number_of_tiers = t;
   memory_pool = M;
   tier_size = M;
   block_size = b;
+  void * ptr = head_ptr;
+  for(i = 0; i < memory_pool/block_size * number_of_tiers; ++i) {
+    *(int*)(ptr + key_offset) = -1;
+    ptr+= block_size;
+  }
 }
+
 void* GetTierPtr(int tier) {
   return (void*)(head_ptr + (tier * tier_size));
 }
+
 void Destroy() {
   free(head_ptr);
 }
@@ -53,8 +60,11 @@ int  Insert(int key, char * value_ptr, int value_len){
   }
   else {
     printf ("Key = %d, ValueLength = %d, Value = %s \n",  key,  value_len, value_ptr);
-    while(GetNodeValueLength(temp_free_ptr) != 0) {
-        temp_free_ptr += block_size;
+	while (GetNodeKey(temp_free_ptr) != -1) {
+      temp_free_ptr += block_size;
+      if (temp_free_ptr == temp_tail_ptr) {
+        return 0;
+      }
     }
     //set previous nodes "next" ptr
     if(temp_free_ptr != temp_head_ptr) {
@@ -68,16 +78,21 @@ int  Insert(int key, char * value_ptr, int value_len){
   }
   return 1;
 }
-int   Delete (int key){ }
-char*   Lookup (int key) {
 
+int   Delete (int key){
+  
 }
+
+char*   Lookup (int key) {
+  //int tier = getTier(key);
+}
+
 void  PrintList () {
   int i;
   printf("---PRINTING LIST--- \n");
   void * ptr = head_ptr;
   for(i = 0; i < memory_pool/block_size * number_of_tiers; ++i) {
-    if(GetNodeValueLength(ptr) > 0) {
+    if (GetNodeKey(ptr) != -1) {
       printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
     }
     ptr+= block_size;
@@ -88,9 +103,11 @@ void  PrintList () {
 char* GetNodeValue(void* ptr) {
   return (char*)(ptr + ptr_offset);
 }
+
 int GetNodeKey(void* ptr){
   return *(int*)(ptr + key_offset);
 }
+
 int GetNodeValueLength(void* ptr) {
   return *(int*)(ptr + len_offset);
 }
