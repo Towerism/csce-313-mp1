@@ -18,6 +18,7 @@ int main(int argc, char ** argv)
   // some sample insertions
   for (i=0; i< 10; i ++)
   {
+    /* printf("%d \n", testnums[i]); */
     Insert (testnums [i], buf, 50);   // insert 50 bytes from the buffer as value for each of the insertions
   }
   PrintList ();

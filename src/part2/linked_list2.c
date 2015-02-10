@@ -1,121 +1,88 @@
 #include "linked_list2.h"
 #include <limits.h>
 #include <stdio.h>
-static void* head_ptrs;
-static void* free_ptrs;
-static void* tail_ptrs;
+static void* head_ptr;
+static void* tail_ptr;
 
 static int number_of_tiers;
 static int memory_pool;
 static int block_size;
 
-static int key_offset = sizeof(char*);
-static int len_offset = sizeof(char*) + sizeof(int);
-static int ptr_offset = sizeof(char*) + sizeof(int)*2;
+static int key_offset = sizeof(void*);
+static int len_offset = sizeof(void*) + sizeof(int);
+static int ptr_offset = sizeof(void*) + sizeof(int)*2;
+static int tier_size;
 
 void  Init (int M, int b, int t) {
   int i;
-  int amount = t * sizeof(void*);
-  head_ptrs = malloc( amount );
-  free_ptrs = malloc(sizeof(void*) * t);
-  tail_ptrs = malloc(sizeof(void*) * t);
-  for(i = 0; i < t; ++i)
-  {
-    //ALLCOATING Linked_List tiers
-    void* head_ptr_temp = malloc(M + sizeof(void*));
-    *GetPtr(i, head_ptrs) = head_ptr_temp;
-    *GetPtr(i, free_ptrs) = head_ptr_temp;
-    *GetPtr(i, tail_ptrs) = (head_ptr_temp + M);
-  }
+  int amount = t * M;
+  head_ptr = calloc(M/b * t, b);
+  tail_ptr =  amount;
   number_of_tiers = t;
   memory_pool = M;
+  tier_size = M;
   block_size = b;
 }
-void** GetPtr(int index, void* ptr_array) {
-  return (void**)(ptr_array + (index * block_size));
-}
-void  DestroyTier (int index) {
-  void * ptr = *GetPtr(index, head_ptrs);
-  free(ptr);
+void* GetTierPtr(int tier) {
+  return (void*)(head_ptr + (tier * tier_size));
 }
 void Destroy() {
-  int i;
-  for(i = 0; i < number_of_tiers; ++i) {
-    DestroyTier(i);
-  }
-  free(head_ptrs);
-  free(tail_ptrs);
-  free(free_ptrs);
+  free(head_ptr);
 }
-int   Insert (int key,char * value_ptr, int value_len){
-  /* double intervals =  number_of_tiers / INT_MAX; */
-  int tier = key % number_of_tiers;
-  void* free_ptr = *GetPtr(tier, free_ptrs);
-  void* head_ptr = *GetPtr(tier, head_ptrs);
-  void* tail_ptr = *GetPtr(tier, tail_ptrs);
+
+int getTier(int key) {
+  int interval = INT_MAX / number_of_tiers;
+  //out of bounds when key is INT_MAX, put in last tier
+  int tier = (key == INT_MAX) ? number_of_tiers - 1 : key / interval;
+  return tier;
+}
+
+int  Insert(int key, char * value_ptr, int value_len){
+  int tier = getTier(key);
+  void* temp_free_ptr = GetTierPtr(tier);
+  void* temp_head_ptr = GetTierPtr(tier);
+  void* temp_tail_ptr = GetTierPtr(tier) + tier_size;
 
   if(block_size - ptr_offset <= value_len) {
     //throw exception?
     printf("Size too big\n");
     return 0;
   }
-  else if(free_ptr == tail_ptr) {
+  else if(temp_free_ptr == temp_tail_ptr) {
     printf("STOP, DROP, Hammertime \n");
   }
   else {
-    //set previous nodes "next" ptr
-    if(free_ptr != head_ptr) {
-      *(char**)(free_ptr - block_size) = free_ptr;
+    printf ("Key = %d, ValueLength = %d, Value = %s \n",  key,  value_len, value_ptr);
+    while(GetNodeValueLength(temp_free_ptr) != 0) {
+        temp_free_ptr += block_size;
     }
-    *(int*)(free_ptr + key_offset) = key;
-    *(int*)(free_ptr + len_offset) = value_len;
-    memcpy(free_ptr + ptr_offset, value_ptr, value_len);
+    //set previous nodes "next" ptr
+    if(temp_free_ptr != temp_head_ptr) {
+      *(char**)(temp_free_ptr - block_size) = temp_free_ptr;
+    }
+    *(int*)(temp_free_ptr + key_offset) = key;
+    *(int*)(temp_free_ptr + len_offset) = value_len;
+    memcpy(temp_free_ptr + ptr_offset, value_ptr, value_len);
 
-    free_ptr += block_size;
+    temp_free_ptr += block_size;
   }
   return 1;
 }
-/* int   Delete (int key){ */
-/*   void* ptr = head_ptr; */
-/*   int i; */
-/*   for(i = 0; i < memory_pool/block_size; ++i) { */
-/*     if(GetNodeKey(ptr) != key) { */
-/*       ptr += block_size; */
-/*     } */
-/*     else { */
-/*       if(ptr!=head_ptr) { */
-/*         *(char**)(ptr - block_size) = (ptr + block_size); */
-/*       } */
-/*       *(int**)(ptr + key_offset) = NULL; */
-/*       *(int**)(ptr + len_offset) = NULL; */
-/*       *(char**)(ptr + ptr_offset) = NULL; */
-/*       *(char**)(ptr) = NULL; */
-/*       return 1; */
-/*     } */
-/*   } */
-/*   return 0; */
-
-/* } */
 int   Delete (int key){ }
-char*   Lookup (int key) { }
+char*   Lookup (int key) {
+
+}
 void  PrintList () {
   int i;
-  for(i = 0; i < number_of_tiers; ++i) {
-    PrintTier(i);
-  }
-}
-void  PrintTier(int index) {
-  void * ptr = *GetPtr(index, head_ptrs);
-  int i;
-  for(i = 0; i < memory_pool/block_size; ++i) {
-    if(GetNodeKey(ptr) != 0 && GetNodeValueLength(ptr) != 0) {
+  printf("---PRINTING LIST--- \n");
+  void * ptr = head_ptr;
+  for(i = 0; i < memory_pool/block_size * number_of_tiers; ++i) {
+    if(GetNodeValueLength(ptr) > 0) {
       printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
     }
-    //Martin?
     ptr+= block_size;
-    /* ptr = *(void**)ptr; */
-
   }
+  printf("-------------------\n");
 }
 
 char* GetNodeValue(void* ptr) {
