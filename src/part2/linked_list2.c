@@ -17,7 +17,7 @@ void  Init (int M, int b, int t) {
   int i;
   int amount = t * M;
   head_ptr = calloc(M/b * t, b);
-  tail_ptr =  amount;
+  tail_ptr = head_ptr + amount;
   number_of_tiers = t;
   memory_pool = M;
   tier_size = M;
