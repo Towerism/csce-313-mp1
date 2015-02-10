@@ -56,11 +56,10 @@ int  Insert(int key, char * value_ptr, int value_len){
     return 0;
   }
   else if(temp_free_ptr == temp_tail_ptr) {
-    printf("STOP, DROP, Hammertime \n");
+    return 1;
   }
   else {
-    printf ("Key = %d, ValueLength = %d, Value = %s \n",  key,  value_len, value_ptr);
-	while (GetNodeKey(temp_free_ptr) != -1) {
+	while (GetNodeKey(temp_free_ptr) >= 0) {
       temp_free_ptr += block_size;
       if (temp_free_ptr == temp_tail_ptr) {
         return 0;
@@ -76,28 +75,36 @@ int  Insert(int key, char * value_ptr, int value_len){
 
     temp_free_ptr += block_size;
   }
-  return 1;
 }
 
 int   Delete (int key){
-  
+  char* ptr = Lookup(key);
+  *(int*)(ptr + key_offset) = -1;
 }
 
 char*   Lookup (int key) {
-  //int tier = getTier(key);
+  int tier = getTier(key);
+  void* temp_free_ptr = GetTierPtr(tier);
+  int i;
+  for (i = 0; i < memory_pool/block_size; ++i) { 
+    int current_key = GetNodeKey(temp_free_ptr);
+    if (current_key == key) {
+      return temp_free_ptr; 
+    }
+    temp_free_ptr += block_size;
+  }
+  return NULL;
 }
 
 void  PrintList () {
   int i;
-  printf("---PRINTING LIST--- \n");
   void * ptr = head_ptr;
   for(i = 0; i < memory_pool/block_size * number_of_tiers; ++i) {
-    if (GetNodeKey(ptr) != -1) {
+    if (GetNodeKey(ptr) >= 0) {
       printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
     }
     ptr+= block_size;
   }
-  printf("-------------------\n");
 }
 
 char* GetNodeValue(void* ptr) {

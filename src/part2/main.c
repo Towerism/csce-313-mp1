@@ -1,4 +1,5 @@
 #include "linked_list2.h"
+#include "stdio.h"
 
 int main(int argc, char ** argv)
 {
@@ -9,7 +10,7 @@ int main(int argc, char ** argv)
   char buf [1024];
   memset (buf, 1, 1024);    // set each byte to 1
 
-  char * msg = "a sample message";
+  char* msg = "a sample message";
 
   Init (M, b, t); // initialize
   // test operations
@@ -21,7 +22,24 @@ int main(int argc, char ** argv)
     /* printf("%d \n", testnums[i]); */
     Insert (testnums [i], buf, 50);   // insert 50 bytes from the buffer as value for each of the insertions
   }
-  PrintList ();
+  PrintList();
+  
+  Delete(50);
+
+  printf("\nAttempting to find key 50\n");
+  char* ptr = Lookup(50);
+  if (ptr) {
+    printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
+  } else {
+    printf("Key not found\n");
+  }
+  
+  printf("Attempting to find key %d\n", 1<<29);
+  ptr = Lookup(1<<29);
+  printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
+
+  printf("\nPrinting list:\n");
+  PrintList();
 
   // end test operations
   Destroy ();
