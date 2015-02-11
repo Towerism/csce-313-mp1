@@ -25,6 +25,7 @@ void  Init (int M, int b, int t) {
   void * ptr = head_ptr;
   for(i = 0; i < memory_pool/block_size * number_of_tiers; ++i) {
     *(int*)(ptr + key_offset) = -1;
+    *(void**)ptr = NULL;
     ptr+= block_size;
   }
 }
@@ -55,9 +56,6 @@ int  Insert(int key, char * value_ptr, int value_len){
     printf("Size too big\n");
     return 0;
   }
-  else if(temp_free_ptr == temp_tail_ptr) {
-    return 1;
-  }
   else {
 	while (GetNodeKey(temp_free_ptr) >= 0) {
       temp_free_ptr += block_size;
@@ -67,7 +65,8 @@ int  Insert(int key, char * value_ptr, int value_len){
     }
     //set previous nodes "next" ptr
     if(temp_free_ptr != temp_head_ptr) {
-      *(char**)(temp_free_ptr - block_size) = temp_free_ptr;
+      *(void**)temp_free_ptr = *(void**)(temp_free_ptr - block_size);
+      *(void**)(temp_free_ptr - block_size) = temp_free_ptr;
     }
     *(int*)(temp_free_ptr + key_offset) = key;
     *(int*)(temp_free_ptr + len_offset) = value_len;
@@ -75,23 +74,35 @@ int  Insert(int key, char * value_ptr, int value_len){
 
     temp_free_ptr += block_size;
   }
+  return 1;
 }
 
 int   Delete (int key){
+  void* head_ptr = GetTierPtr(key);
   char* ptr = Lookup(key);
+  if (!ptr) {
+  	return 0;
+  }
   *(int*)(ptr + key_offset) = -1;
+  if (ptr != head_ptr) {
+  	*(void**)(ptr - block_size) = *(void**)ptr; 
+  }
+  return 1;
 }
 
 char*   Lookup (int key) {
   int tier = getTier(key);
   void* temp_free_ptr = GetTierPtr(tier);
   int i;
-  for (i = 0; i < memory_pool/block_size; ++i) { 
+  void* next_ptr;
+  while (temp_free_ptr != NULL) {
+    next_ptr = *(void**)temp_free_ptr;
+  	printf("next_ptr == 0x%x\n", next_ptr);
     int current_key = GetNodeKey(temp_free_ptr);
     if (current_key == key) {
       return temp_free_ptr; 
     }
-    temp_free_ptr += block_size;
+    temp_free_ptr = next_ptr;
   }
   return NULL;
 }
@@ -101,7 +112,7 @@ void  PrintList () {
   void * ptr = head_ptr;
   for(i = 0; i < memory_pool/block_size * number_of_tiers; ++i) {
     if (GetNodeKey(ptr) >= 0) {
-      printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
+      printf("Address: 0x%x, Key: %d , ValueLength: %d, NextPtr: 0x%x \n", ptr, GetNodeKey(ptr), GetNodeValueLength(ptr), *(void**)ptr);
     }
     ptr+= block_size;
   }

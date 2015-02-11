@@ -34,9 +34,9 @@ int main(int argc, char ** argv)
     printf("Key not found\n");
   }
   
-  printf("Attempting to find key %d\n", 1<<29);
-  ptr = Lookup(1<<29);
-  printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
+  //printf("Attempting to find key %d\n", 1<<29);
+  //ptr = Lookup(1<<29);
+  //printf("Key: %d , ValueLength: %d \n", GetNodeKey(ptr), GetNodeValueLength(ptr));
 
   printf("\nPrinting list:\n");
   PrintList();
