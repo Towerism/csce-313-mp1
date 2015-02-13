@@ -52,7 +52,6 @@ int  Insert(int key, char * value_ptr, int value_len){
   void* temp_tail_ptr = GetTierPtr(tier) + tier_size;
 
   if(block_size - ptr_offset <= value_len) {
-    //throw exception?
     printf("Size too big\n");
     return 0;
   }
@@ -97,7 +96,6 @@ char*   Lookup (int key) {
   void* next_ptr;
   while (temp_free_ptr != NULL) {
     next_ptr = *(void**)temp_free_ptr;
-  	printf("next_ptr == 0x%x\n", next_ptr);
     int current_key = GetNodeKey(temp_free_ptr);
     if (current_key == key) {
       return temp_free_ptr; 
