@@ -15,6 +15,14 @@ void  Init (int M, int b){
   free_ptr = head_ptr;
   memory_pool = M;
   block_size = b;
+  
+  void * ptr = head_ptr;
+  int i;
+  for(i = 0; i < memory_pool/block_size; ++i) {
+    *(int*)(ptr + key_offset) = -1;
+    *(void**)ptr = NULL;
+    ptr+= block_size;
+  }
 }
 
 void  Destroy (){
@@ -30,7 +38,7 @@ int   Insert (int key,char* value_ptr, int value_len){
   }
   else if(free_ptr == tail_ptr)
   {
-      printf("STOP, DROP, Hammertime \n");
+      printf("List is full\n"); 
   }
   else {
     //set previous nodes "next" ptr
@@ -97,7 +105,7 @@ void  PrintList () {
   void * ptr = head_ptr;
   int i;
   for(i = 0; i < memory_pool/block_size; ++i) {
-    if(getNodeKey(ptr) != 0 && getNodeValueLength(ptr) != 0) {
+    if(getNodeKey(ptr) != -1) {
       printf("Key: %d , ValueLength: %d \n", getNodeKey(ptr), getNodeValueLength(ptr));
     }
     ptr += block_size;
